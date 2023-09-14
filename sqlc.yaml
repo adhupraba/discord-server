@@ -1,7 +1,7 @@
 version: "2"
 sql:
   - schema: "internal/migrations"
-    queries: "internal/queries"
+    queries: "internal/sqlc_queries"
     engine: "postgresql"
     gen:
       go:
@@ -10,6 +10,8 @@ sql:
         emit_exact_table_names: true
         emit_json_tags: true
         json_tags_case_style: "camel"
+        rename:
+          image_url: "ImageURL"
         overrides:
           - column: "public.*.id"
             go_struct_tag: 'sql:"primary_key"'

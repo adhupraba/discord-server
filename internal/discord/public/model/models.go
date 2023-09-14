@@ -121,7 +121,7 @@ type Profiles struct {
 	ID        uuid.UUID `json:"id" sql:"primary_key"`
 	UserID    string    `json:"userId"`
 	Name      string    `json:"name"`
-	ImageUrl  string    `json:"imageUrl"`
+	ImageURL  string    `json:"imageUrl"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -130,7 +130,7 @@ type Profiles struct {
 type Servers struct {
 	ID         uuid.UUID `json:"id" sql:"primary_key"`
 	Name       string    `json:"name"`
-	ImageUrl   string    `json:"imageUrl"`
+	ImageURL   string    `json:"imageUrl"`
 	InviteCode string    `json:"inviteCode"`
 	ProfileID  uuid.UUID `json:"profileId"`
 	CreatedAt  time.Time `json:"createdAt"`

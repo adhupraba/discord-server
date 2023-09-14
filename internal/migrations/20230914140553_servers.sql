@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE servers (
-  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   image_url TEXT NOT NULL,
   invite_code TEXT NOT NULL,

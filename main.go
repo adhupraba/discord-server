@@ -15,6 +15,7 @@ import (
 func init() {
 	lib.LoadEnv()
 	lib.ConnectDb()
+	lib.InitClerkClient()
 }
 
 func main() {
@@ -41,8 +42,9 @@ func main() {
 	apiRouter := chi.NewRouter()
 
 	apiRouter.Mount("/health", routes.RegisterHealthRoutes())
+	apiRouter.Mount("/profile", routes.RegisterProfileRoutes())
 
-	router.Mount("/api", apiRouter)
+	router.Mount("/api", lib.InjectActiveSession(apiRouter))
 
 	err := serve.ListenAndServe()
 

@@ -13,6 +13,7 @@ type envConfig struct {
 	DbUrl              string
 	Env                string
 	CorsAllowedOrigins []string
+	ClerkSecretKey     string
 }
 
 var EnvConfig envConfig
@@ -35,6 +36,7 @@ func LoadEnv() {
 		DbUrl:              os.Getenv("DB_URL"),
 		Env:                env,
 		CorsAllowedOrigins: []string{},
+		ClerkSecretKey:     os.Getenv("CLERK_SECRET_KEY"),
 	}
 
 	if EnvConfig.Env == "" {
@@ -53,5 +55,9 @@ func LoadEnv() {
 
 	if EnvConfig.DbUrl == "" {
 		log.Fatal("DB_URL is not found in the environment")
+	}
+
+	if EnvConfig.ClerkSecretKey == "" {
+		log.Fatal("CLERK_SECRET_KEY is not found in the environment")
 	}
 }

@@ -7,10 +7,10 @@ import (
 )
 
 func RegisterHealthRoutes() *chi.Mux {
-	hr := controllers.HealthController{}
+	hc := controllers.HealthController{}
 	healthRoute := chi.NewRouter()
 
-	healthRoute.Get("/", hr.Health)
+	healthRoute.Get("/", hc.Health)
 
 	return healthRoute
 }

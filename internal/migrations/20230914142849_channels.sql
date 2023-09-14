@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE channels (
-  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   type channel_type NOT NULL DEFAULT E'TEXT',
   profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,

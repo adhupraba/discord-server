@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE members (
-  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY,
   role member_role NOT NULL DEFAULT E'GUEST',
   profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   server_id UUID NOT NULL REFERENCES servers(id) ON DELETE CASCADE,

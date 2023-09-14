@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE profiles (
-  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY,
   user_id TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   image_url TEXT NOT NULL,
