@@ -3,9 +3,12 @@ package lib
 import (
 	"database/sql"
 	"log"
+
+	"github.com/adhupraba/discord-server/internal/queries"
 )
 
-var DB *sql.DB
+var DB *queries.Queries
+var SqlConn *sql.DB
 
 func ConnectDb() {
 	log.Println("db url", EnvConfig.DbUrl)
@@ -15,5 +18,6 @@ func ConnectDb() {
 		log.Fatal("Unable to connect to database")
 	}
 
-	DB = conn
+	DB = queries.New(conn)
+	SqlConn = conn
 }

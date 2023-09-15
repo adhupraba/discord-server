@@ -4,34 +4,44 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-jet/jet/v2/qrm"
+	"github.com/google/uuid"
 
-	"github.com/adhupraba/discord-server/internal/queries"
+	"github.com/adhupraba/discord-server/internal/discord/public/model"
+	"github.com/adhupraba/discord-server/lib"
 	"github.com/adhupraba/discord-server/utils"
 )
 
 type ServerController struct{}
 
-func (hc *ServerController) Server(w http.ResponseWriter, r *http.Request) {
-	clerkUser, errCode, err := utils.GetUserFromClerk(r.Context())
+func (hc *ServerController) CreateServer(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
+	type createServerBody struct {
+		Name     string `json:"name" validate:"required,min=1,max=128"`
+		ImageURL string `json:"imageUrl" validate:"required,url"`
+	}
+
+	var body createServerBody
+	err := utils.BodyParser(r.Body, &body)
 
 	if err != nil {
-		utils.RespondWithError(w, errCode, err.Error())
+		utils.RespondWithError(w, http.StatusUnprocessableEntity, "Invalid data sent")
 		return
 	}
 
-	dbUser, err := queries.GetUserByClerkID(r.Context(), clerkUser.ID)
+	serverData := model.Servers{
+		ID:         uuid.New(),
+		Name:       body.Name,
+		ImageURL:   body.ImageURL,
+		InviteCode: uuid.New().String(),
+		ProfileID:  profile.ID,
+	}
 
-	if err != nil && err != qrm.ErrNoRows {
-		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+	server, err := lib.DB.CreateServerWithTx(r.Context(), lib.SqlConn, serverData)
+
+	if err != nil {
+		log.Println("server creation error:", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error creating your server")
 		return
 	}
 
-	if dbUser.UserID != "" {
-		log.Println("sending existing user")
-		utils.RespondWithJson(w, http.StatusOK, dbUser)
-		return
-	}
-
-	utils.RespondWithJson(w, http.StatusOK, dbUser)
+	utils.RespondWithJson(w, http.StatusCreated, server)
 }

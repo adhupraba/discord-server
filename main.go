@@ -19,8 +19,8 @@ func init() {
 }
 
 func main() {
-	if lib.DB != nil {
-		defer lib.DB.Close()
+	if lib.SqlConn != nil {
+		defer lib.SqlConn.Close()
 	}
 
 	router := chi.NewRouter()
@@ -34,7 +34,8 @@ func main() {
 
 	serve := http.Server{
 		Handler: router,
-		Addr:    ":" + lib.EnvConfig.Port,
+		Addr:    "127.0.0.1:" + lib.EnvConfig.Port,
+		// Addr:    ":" + lib.EnvConfig.Port,
 	}
 
 	log.Printf("Server listening on port %s", lib.EnvConfig.Port)
@@ -43,6 +44,7 @@ func main() {
 
 	apiRouter.Mount("/health", routes.RegisterHealthRoutes())
 	apiRouter.Mount("/profile", routes.RegisterProfileRoutes())
+	apiRouter.Mount("/server", routes.RegisterServerRoutes())
 
 	router.Mount("/api", lib.InjectActiveSession(apiRouter))
 

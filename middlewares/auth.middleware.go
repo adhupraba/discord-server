@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/adhupraba/discord-server/internal/discord/public/model"
-	"github.com/adhupraba/discord-server/internal/queries"
+	"github.com/adhupraba/discord-server/lib"
 	"github.com/adhupraba/discord-server/utils"
 )
 
@@ -19,13 +19,13 @@ func Auth(handler NextFunc) http.HandlerFunc {
 			return
 		}
 
-		user, err := queries.GetUserByClerkID(r.Context(), clerkUser.ID)
+		profile, err := lib.DB.GetUserByClerkID(r.Context(), clerkUser.ID)
 
 		if err != nil {
 			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		handler(w, r, user)
+		handler(w, r, profile)
 	}
 }
