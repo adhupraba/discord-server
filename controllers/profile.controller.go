@@ -6,7 +6,9 @@ import (
 	"github.com/go-jet/jet/v2/qrm"
 	"github.com/google/uuid"
 
+	"github.com/adhupraba/discord-server/constants"
 	"github.com/adhupraba/discord-server/internal/discord/public/model"
+	"github.com/adhupraba/discord-server/internal/queries"
 	"github.com/adhupraba/discord-server/lib"
 	"github.com/adhupraba/discord-server/types"
 	"github.com/adhupraba/discord-server/utils"
@@ -29,17 +31,26 @@ func (pc *ProfileController) UpsertProfile(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if dbUser.UserID != "" {
-		servers, err := lib.DB.GetServersOfUser(r.Context(), dbUser.ID)
+	if dbUser.ID.String() != constants.EmptyUUID {
+		servers, err := lib.DB.GetServersOfUser(r.Context(), queries.GetServersOfUserParams{
+			ProfileId: dbUser.ID,
+			Opts:      &types.PaginationOpts{Limit: 1},
+		})
 
 		if err != nil && err != qrm.ErrNoRows {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Error when fetching server")
 			return
 		}
 
-		utils.RespondWithJson(w, http.StatusOK, types.ProfileAndServers{
+		var server *model.Servers
+
+		if len(servers) > 0 {
+			server = &servers[0]
+		}
+
+		utils.RespondWithJson(w, http.StatusOK, types.ProfileAndServer{
 			Profiles: dbUser,
-			Servers:  servers,
+			Server:   server,
 		})
 		return
 	}
@@ -59,22 +70,12 @@ func (pc *ProfileController) UpsertProfile(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	utils.RespondWithJson(w, http.StatusOK, types.ProfileAndServers{
+	utils.RespondWithJson(w, http.StatusOK, types.ProfileAndServer{
 		Profiles: dbUser,
-		Servers:  []model.Servers{},
+		Server:   nil,
 	})
 }
 
 func (pc *ProfileController) GetProfile(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
-	servers, err := lib.DB.GetServersOfUser(r.Context(), profile.ID)
-
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error fetching servers")
-		return
-	}
-
-	utils.RespondWithJson(w, http.StatusOK, types.ProfileAndServers{
-		Profiles: profile,
-		Servers:  servers,
-	})
+	utils.RespondWithJson(w, http.StatusOK, profile)
 }

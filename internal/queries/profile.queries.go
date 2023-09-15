@@ -14,7 +14,7 @@ import (
 func (q *Queries) GetUserByClerkID(ctx context.Context, clerkID string) (model.Profiles, error) {
 	stmt := SELECT(Profiles.AllColumns).
 		FROM(Profiles).
-		WHERE(Profiles.UserID.EQ(String(clerkID)))
+		WHERE(Profiles.UserID.EQ(String(clerkID))).LIMIT(1)
 
 	var profile model.Profiles
 	err := stmt.QueryContext(ctx, q.db, &profile)
@@ -31,7 +31,7 @@ func (q *Queries) InsertUserProfile(ctx context.Context, data model.Profiles) (m
 	return profile, err
 }
 
-func (q *Queries) GetUserAndServers(ctx context.Context, profileID uuid.UUID) (types.ProfileAndServers, error) {
+func (q *Queries) GetUserAndServers(ctx context.Context, profileID uuid.UUID) (types.ProfileAndServer, error) {
 	stmt := SELECT(Profiles.AllColumns).
 		FROM(
 			Profiles.LEFT_JOIN(
@@ -40,7 +40,7 @@ func (q *Queries) GetUserAndServers(ctx context.Context, profileID uuid.UUID) (t
 		).
 		WHERE(Profiles.ID.EQ(UUID(profileID)))
 
-	var profile types.ProfileAndServers
+	var profile types.ProfileAndServer
 	err := stmt.QueryContext(ctx, q.db, &profile)
 
 	return profile, err

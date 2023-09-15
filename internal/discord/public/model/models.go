@@ -131,7 +131,7 @@ type Servers struct {
 	ID         uuid.UUID `json:"id" sql:"primary_key"`
 	Name       string    `json:"name"`
 	ImageURL   string    `json:"imageUrl"`
-	InviteCode string    `json:"inviteCode"`
+	InviteCode uuid.UUID `json:"inviteCode"`
 	ProfileID  uuid.UUID `json:"profileId"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
