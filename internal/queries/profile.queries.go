@@ -14,7 +14,7 @@ import (
 func (q *Queries) GetUserByClerkID(ctx context.Context, clerkID string) (model.Profiles, error) {
 	stmt := SELECT(Profiles.AllColumns).
 		FROM(Profiles).
-		WHERE(Profiles.UserID.EQ(String(clerkID))).LIMIT(1)
+		WHERE(Profiles.UserID.EQ(String(clerkID)))
 
 	var profile model.Profiles
 	err := stmt.QueryContext(ctx, q.db, &profile)

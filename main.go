@@ -45,6 +45,8 @@ func main() {
 	apiRouter.Mount("/health", routes.RegisterHealthRoutes())
 	apiRouter.Mount("/profile", routes.RegisterProfileRoutes())
 	apiRouter.Mount("/server", routes.RegisterServerRoutes())
+	apiRouter.Mount("/member", routes.RegisterMemberRoutes())
+	apiRouter.Mount("/channel", routes.RegisterChannelRoutes())
 
 	router.Mount("/api", lib.InjectActiveSession(apiRouter))
 

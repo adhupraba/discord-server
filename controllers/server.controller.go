@@ -70,7 +70,6 @@ func (sc *ServerController) GetUserMemberServers(w http.ResponseWriter, r *http.
 
 func (sc *ServerController) GetServer(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
 	idQ := chi.URLParam(r, "serverId")
-
 	serverId, err := uuid.Parse(idQ)
 
 	if err != nil {
@@ -93,7 +92,7 @@ func (sc *ServerController) GetServer(w http.ResponseWriter, r *http.Request, pr
 		return
 	}
 
-	utils.RespondWithJson(w, http.StatusCreated, server)
+	utils.RespondWithJson(w, http.StatusOK, server)
 }
 
 func (sc *ServerController) GetFullServerDetails(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
@@ -182,9 +181,11 @@ func (sc *ServerController) VerifyAndAcceptInviteCode(w http.ResponseWriter, r *
 		ID:        uuid.New(),
 		ProfileID: profile.ID,
 		ServerID:  server.ID,
+		Role:      model.MemberRoleGUEST,
 	})
 
 	if err != nil {
+		log.Println("error adding as member =>", err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error adding as member")
 		return
 	}
@@ -193,4 +194,98 @@ func (sc *ServerController) VerifyAndAcceptInviteCode(w http.ResponseWriter, r *
 		"existing": false,
 		"member":   member,
 	})
+}
+
+func (sc *ServerController) UpdateServer(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
+	idQ := chi.URLParam(r, "serverId")
+	serverId, err := uuid.Parse(idQ)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid server id")
+		return
+	}
+
+	type updateServerBody struct {
+		Name     string `json:"name" validate:"required,min=1,max=128"`
+		ImageURL string `json:"imageUrl" validate:"required,url"`
+	}
+
+	var body updateServerBody
+	err = utils.BodyParser(r.Body, &body)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusUnprocessableEntity, "Invalid data")
+		return
+	}
+
+	params := queries.UpdateServerParams{ServerId: serverId, ProfileId: profile.ID}
+	data := model.Servers{Name: body.Name, ImageURL: body.ImageURL}
+
+	server, err := lib.DB.UpdateServer(r.Context(), params, data)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error when updating server data")
+		return
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, server)
+}
+
+func (sc *ServerController) MemberLeaveServer(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
+	idQ := chi.URLParam(r, "serverId")
+	serverId, err := uuid.Parse(idQ)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid server id")
+		return
+	}
+
+	member, err := lib.DB.GetServerMember(r.Context(), queries.GetServerMemberParams{
+		ServerId:  serverId,
+		ProfileId: profile.ID,
+	})
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error valdiating user")
+		return
+	}
+
+	if member.Role == model.MemberRoleADMIN {
+		utils.RespondWithError(w, http.StatusForbidden, "An admin cannot leave the server")
+		return
+	}
+
+	err = lib.DB.RemoveServerMember(r.Context(), queries.RemoveServerMemberParams{
+		ServerId: serverId,
+		MemberId: member.ID,
+	})
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error when removing member")
+		return
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, types.Json{"message": "Member has left the server."})
+}
+
+func (sc *ServerController) DeleteServer(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
+	idQ := chi.URLParam(r, "serverId")
+	serverId, err := uuid.Parse(idQ)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid server id")
+		return
+	}
+
+	err = lib.DB.DeleteServer(r.Context(), queries.DeleteServerParams{
+		ServerId:  serverId,
+		ProfileId: profile.ID,
+	})
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error when deleting server")
+		return
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, types.Json{"message": "Deleted the server."})
 }

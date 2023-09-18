@@ -11,7 +11,7 @@ import (
 )
 
 func (q *Queries) CreateMember(ctx context.Context, data model.Members) (model.Members, error) {
-	stmt := Members.INSERT(Members.ID, Members.ProfileID, Members.ServerID).MODEL(data).RETURNING(Members.AllColumns)
+	stmt := Members.INSERT(Members.ID, Members.ProfileID, Members.ServerID, Members.Role).MODEL(data).RETURNING(Members.AllColumns)
 
 	var member model.Members
 	err := stmt.QueryContext(ctx, q.db, &member)
@@ -30,10 +30,45 @@ func (q *Queries) GetServerMember(ctx context.Context, params GetServerMemberPar
 		WHERE(
 			Members.ServerID.EQ(UUID(params.ServerId)).
 				AND(Members.ProfileID.EQ(UUID(params.ProfileId))),
-		).LIMIT(1)
+		)
 
 	var member model.Members
 	err := stmt.QueryContext(ctx, q.db, &member)
 
 	return member, err
+}
+
+type UpdateMemberRoleParams struct {
+	MemberId uuid.UUID
+	ServerId uuid.UUID
+	Role     model.MemberRole
+}
+
+func (q *Queries) UpdateMemberRole(ctx context.Context, params UpdateMemberRoleParams) error {
+	stmt := Members.UPDATE(Members.Role).
+		MODEL(model.Members{Role: params.Role}).
+		WHERE(
+			Members.ID.EQ(UUID(params.MemberId)).
+				AND(Members.ServerID.EQ(UUID(params.ServerId))),
+		)
+
+	_, err := stmt.ExecContext(ctx, q.db)
+
+	return err
+}
+
+type RemoveServerMemberParams struct {
+	ServerId uuid.UUID
+	MemberId uuid.UUID
+}
+
+func (q *Queries) RemoveServerMember(ctx context.Context, params RemoveServerMemberParams) error {
+	stmt := Members.DELETE().
+		WHERE(
+			Members.ID.EQ(UUID(params.MemberId)).
+				AND(Members.ServerID.EQ(UUID(params.ServerId))),
+		)
+
+	_, err := stmt.ExecContext(ctx, q.db)
+	return err
 }

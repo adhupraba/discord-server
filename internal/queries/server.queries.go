@@ -93,6 +93,7 @@ func (q *Queries) CreateServerWithTx(ctx context.Context, params CreateServerWit
 		ID:        uuid.New(),
 		ProfileID: server.ProfileID,
 		ServerID:  server.ID,
+		Role:      model.MemberRoleADMIN,
 	}
 	member, err := qtx.CreateMember(ctx, memberData)
 
@@ -129,14 +130,10 @@ func (q *Queries) GetServer(ctx context.Context, params GetServerParams) (model.
 		WHERE(
 			Servers.ID.EQ(UUID(params.ServerId)).
 				AND(Members.ProfileID.EQ(UUID(params.ProfileId))),
-		).LIMIT(1)
+		)
 
 	var server model.Servers
 	err := stmt.QueryContext(ctx, q.db, &server)
-
-	if err != nil && err == qrm.ErrNoRows {
-		return model.Servers{}, nil
-	}
 
 	return server, err
 }
@@ -193,7 +190,7 @@ func (q *Queries) FindUserInServerWithInviteCode(ctx context.Context, params Fin
 		WHERE(
 			Servers.InviteCode.EQ(UUID(params.InviteCode)).
 				AND(Members.ProfileID.EQ(UUID(params.ProfileId))),
-		).LIMIT(1)
+		)
 
 	var server model.Servers
 	err := stmt.QueryContext(ctx, q.db, &server)
@@ -204,11 +201,47 @@ func (q *Queries) FindUserInServerWithInviteCode(ctx context.Context, params Fin
 func (q *Queries) GetServerUsingInviteCode(ctx context.Context, inviteCode uuid.UUID) (model.Servers, error) {
 	stmt := SELECT(Servers.ID).
 		FROM(Servers).
-		WHERE(Servers.InviteCode.EQ(UUID(inviteCode))).
-		LIMIT(1)
+		WHERE(Servers.InviteCode.EQ(UUID(inviteCode)))
 
 	var server model.Servers
 	err := stmt.QueryContext(ctx, q.db, &server)
 
 	return server, err
+}
+
+type UpdateServerParams struct {
+	ServerId  uuid.UUID
+	ProfileId uuid.UUID
+}
+
+func (q *Queries) UpdateServer(ctx context.Context, params UpdateServerParams, data model.Servers) (model.Servers, error) {
+	stmt := Servers.UPDATE(Servers.Name, Servers.ImageURL).
+		MODEL(data).
+		WHERE(
+			Servers.ID.EQ(UUID(params.ServerId)).
+				AND(Servers.ProfileID.EQ(UUID(params.ProfileId))),
+		).
+		RETURNING(Servers.AllColumns)
+
+	var server model.Servers
+	err := stmt.QueryContext(ctx, q.db, &server)
+
+	return server, err
+}
+
+type DeleteServerParams struct {
+	ServerId  uuid.UUID
+	ProfileId uuid.UUID
+}
+
+func (q *Queries) DeleteServer(ctx context.Context, params DeleteServerParams) error {
+	stmt := Servers.DELETE().
+		WHERE(
+			Servers.ID.EQ(UUID(params.ServerId)).
+				AND(Servers.ProfileID.EQ(UUID(params.ProfileId))),
+		)
+
+	_, err := stmt.ExecContext(ctx, q.db)
+
+	return err
 }

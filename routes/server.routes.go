@@ -14,9 +14,12 @@ func RegisterServerRoutes() *chi.Mux {
 	serverRoute.Post("/", middlewares.Auth(sc.CreateServer))
 	serverRoute.Get("/user-servers", middlewares.Auth(sc.GetUserMemberServers))
 	serverRoute.Get("/{serverId}", middlewares.Auth(sc.GetServer))
+	serverRoute.Patch("/{serverId}", middlewares.Auth(sc.UpdateServer))
 	serverRoute.Get("/{serverId}/channels-and-members", middlewares.Auth(sc.GetFullServerDetails))
 	serverRoute.Patch("/{serverId}/invite-code", middlewares.Auth(sc.UpdateInviteCode))
 	serverRoute.Patch("/{inviteCode}/verify", middlewares.Auth(sc.VerifyAndAcceptInviteCode))
+	serverRoute.Patch("/{serverId}/leave", middlewares.Auth(sc.MemberLeaveServer))
+	serverRoute.Delete("/{serverId}", middlewares.Auth(sc.DeleteServer))
 
 	return serverRoute
 }
