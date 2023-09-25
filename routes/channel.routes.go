@@ -12,6 +12,8 @@ func RegisterChannelRoutes() *chi.Mux {
 	channelRoute := chi.NewRouter()
 
 	channelRoute.Post("/", middlewares.Auth(cc.CreateChannel))
+	channelRoute.Delete("/{channelId}", middlewares.Auth(cc.DeleteChannel))
+	channelRoute.Patch("/{channelId}", middlewares.Auth(cc.UpdateChannel))
 
 	return channelRoute
 }
