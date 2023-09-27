@@ -139,7 +139,12 @@ func (q *Queries) GetServer(ctx context.Context, params GetServerParams) (model.
 }
 
 func (q *Queries) GetServerWithChannelsAndMembers(ctx context.Context, serverId uuid.UUID) (types.ServerWithChannelsAndMembers, error) {
-	stmt := SELECT(Servers.AllColumns, Channels.AllColumns, Members.AllColumns, Profiles.AllColumns).
+	stmt := SELECT(
+		Servers.AllColumns,
+		Channels.AllColumns,
+		Members.AllColumns,
+		Profiles.AllColumns,
+	).
 		FROM(
 			Servers.
 				LEFT_JOIN(Channels, Channels.ServerID.EQ(Servers.ID)).

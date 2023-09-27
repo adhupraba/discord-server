@@ -13,6 +13,7 @@ func RegisterMemberRoutes() *chi.Mux {
 
 	memberRoute.Patch("/{memberId}", middlewares.Auth(mc.UpdateMemberRole))
 	memberRoute.Delete("/{memberId}", middlewares.Auth(mc.RemoveServerMember))
+	memberRoute.Get("/server/{serverId}", middlewares.Auth(mc.GetServerMember))
 
 	return memberRoute
 }

@@ -25,15 +25,23 @@ func (q *Queries) CreateChannel(ctx context.Context, data model.Channels) (model
 
 type GetServerChannelParams struct {
 	ChannelId uuid.UUID
-	ServerId  uuid.UUID
+	ServerId  *uuid.UUID
 }
 
 func (q *Queries) GetServerChannel(ctx context.Context, params GetServerChannelParams) (model.Channels, error) {
+	var exp BoolExpression
+
+	if params.ServerId == nil {
+		exp = Bool(true)
+	} else {
+		exp = Channels.ServerID.EQ(UUID(params.ServerId))
+	}
+
 	stmt := SELECT(Channels.AllColumns).
 		FROM(Channels).
 		WHERE(
 			Channels.ID.EQ(UUID(params.ChannelId)).
-				AND(Channels.ServerID.EQ(UUID(params.ServerId))),
+				AND(exp),
 		)
 
 	var channel model.Channels
@@ -61,6 +69,20 @@ func (q *Queries) UpdateChannel(ctx context.Context, params UpdateChannelParams)
 		MODEL(params.Data).
 		WHERE(Channels.ID.EQ(UUID(params.ChannelId))).
 		RETURNING(Channels.AllColumns)
+
+	var channel model.Channels
+	err := stmt.QueryContext(ctx, q.db, &channel)
+
+	return channel, err
+}
+
+func (q *Queries) GetServerGeneralChannel(ctx context.Context, serverId uuid.UUID) (model.Channels, error) {
+	stmt := SELECT(Channels.AllColumns).
+		FROM(Channels).
+		WHERE(
+			Channels.ServerID.EQ(UUID(serverId)).
+				AND(Channels.Name.EQ(String("general"))),
+		)
 
 	var channel model.Channels
 	err := stmt.QueryContext(ctx, q.db, &channel)

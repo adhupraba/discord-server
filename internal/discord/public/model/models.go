@@ -108,6 +108,25 @@ type Channels struct {
 	UpdatedAt time.Time   `json:"updatedAt"`
 }
 
+type Conversations struct {
+	ID          uuid.UUID `json:"id" sql:"primary_key"`
+	MemberOneID uuid.UUID `json:"memberOneId"`
+	MemberTwoID uuid.UUID `json:"memberTwoId"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+type DirectMessages struct {
+	ID             uuid.UUID `json:"id" sql:"primary_key"`
+	Content        string    `json:"content"`
+	FileUrl        *string   `json:"fileUrl"`
+	MemberID       uuid.UUID `json:"memberId"`
+	ConversationID uuid.UUID `json:"conversationId"`
+	Deleted        bool      `json:"deleted"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+}
+
 type Members struct {
 	ID        uuid.UUID  `json:"id" sql:"primary_key"`
 	Role      MemberRole `json:"role"`
@@ -115,6 +134,17 @@ type Members struct {
 	ServerID  uuid.UUID  `json:"serverId"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
+}
+
+type Messages struct {
+	ID        uuid.UUID `json:"id" sql:"primary_key"`
+	Content   string    `json:"content"`
+	FileUrl   *string   `json:"fileUrl"`
+	MemberID  uuid.UUID `json:"memberId"`
+	ChannelID uuid.UUID `json:"channelId"`
+	Deleted   bool      `json:"deleted"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Profiles struct {

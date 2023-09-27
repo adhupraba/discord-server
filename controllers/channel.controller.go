@@ -98,7 +98,7 @@ func (cc *ChannelController) DeleteChannel(w http.ResponseWriter, r *http.Reques
 
 	channel, err := lib.DB.GetServerChannel(r.Context(), queries.GetServerChannelParams{
 		ChannelId: channelId,
-		ServerId:  serverId,
+		ServerId:  &serverId,
 	})
 
 	if err == qrm.ErrNoRows {
@@ -183,7 +183,7 @@ func (cc *ChannelController) UpdateChannel(w http.ResponseWriter, r *http.Reques
 
 	channel, err := lib.DB.GetServerChannel(r.Context(), queries.GetServerChannelParams{
 		ChannelId: channelId,
-		ServerId:  serverId,
+		ServerId:  &serverId,
 	})
 
 	if err == qrm.ErrNoRows {
@@ -230,4 +230,62 @@ func (cc *ChannelController) UpdateChannel(w http.ResponseWriter, r *http.Reques
 	}
 
 	utils.RespondWithJson(w, http.StatusCreated, channel)
+}
+
+func (cc *ChannelController) GetChannel(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
+	cIdQ := chi.URLParam(r, "channelId")
+	channelId, err := uuid.Parse(cIdQ)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid channel id")
+		return
+	}
+
+	sIdQ := r.URL.Query().Get("serverId")
+	serverId, err := uuid.Parse(sIdQ)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid server id")
+		return
+	}
+
+	channel, err := lib.DB.GetServerChannel(r.Context(), queries.GetServerChannelParams{
+		ChannelId: channelId,
+		ServerId:  &serverId,
+	})
+
+	if err == qrm.ErrNoRows {
+		utils.RespondWithError(w, http.StatusNotFound, "Channel not found")
+		return
+	}
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error when fetching channel")
+		return
+	}
+
+	member, err := lib.DB.GetServerMember(r.Context(), queries.GetServerMemberParams{
+		ServerId:  serverId,
+		ProfileId: profile.ID,
+	})
+
+	if err == qrm.ErrNoRows {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Member not found in the server")
+		return
+	}
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error when validating user")
+		return
+	}
+
+	type response struct {
+		Channel model.Channels `json:"channel"`
+		Member  model.Members  `json:"member"`
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, response{
+		Channel: channel,
+		Member:  member,
+	})
 }

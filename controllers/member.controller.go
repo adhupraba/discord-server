@@ -181,3 +181,30 @@ func (mc *MemberController) RemoveServerMember(w http.ResponseWriter, r *http.Re
 		Members: server.Members,
 	})
 }
+
+func (mc *MemberController) GetServerMember(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
+	sIdQ := chi.URLParam(r, "serverId")
+	serverId, err := uuid.Parse(sIdQ)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid server id")
+		return
+	}
+
+	member, err := lib.DB.GetServerMemberWithProfile(r.Context(), queries.GetServerMemberWithProfileParams{
+		ServerId:  serverId,
+		ProfileId: profile.ID,
+	})
+
+	if err == qrm.ErrNoRows {
+		utils.RespondWithError(w, http.StatusNotFound, "Member not found")
+		return
+	}
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error when fetching member")
+		return
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, member)
+}

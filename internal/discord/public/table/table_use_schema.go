@@ -11,7 +11,10 @@ package table
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
 	Channels = Channels.FromSchema(schema)
+	Conversations = Conversations.FromSchema(schema)
+	DirectMessages = DirectMessages.FromSchema(schema)
 	Members = Members.FromSchema(schema)
+	Messages = Messages.FromSchema(schema)
 	Profiles = Profiles.FromSchema(schema)
 	Servers = Servers.FromSchema(schema)
 }

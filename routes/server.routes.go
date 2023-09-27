@@ -20,6 +20,7 @@ func RegisterServerRoutes() *chi.Mux {
 	serverRoute.Patch("/{inviteCode}/verify", middlewares.Auth(sc.VerifyAndAcceptInviteCode))
 	serverRoute.Patch("/{serverId}/leave", middlewares.Auth(sc.MemberLeaveServer))
 	serverRoute.Delete("/{serverId}", middlewares.Auth(sc.DeleteServer))
+	serverRoute.Get("/{serverId}/general-channel", middlewares.Auth(sc.GetServerGeneralChannel))
 
 	return serverRoute
 }

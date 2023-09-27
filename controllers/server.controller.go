@@ -163,10 +163,7 @@ func (sc *ServerController) VerifyAndAcceptInviteCode(w http.ResponseWriter, r *
 	}
 
 	if existing.ID.String() != constants.EmptyUUID {
-		utils.RespondWithJson(w, http.StatusFound, types.Json{
-			"existing": true,
-			"server":   existing,
-		})
+		utils.RespondWithJson(w, http.StatusFound, types.Json{"existing": true, "server": existing})
 		return
 	}
 
@@ -190,10 +187,7 @@ func (sc *ServerController) VerifyAndAcceptInviteCode(w http.ResponseWriter, r *
 		return
 	}
 
-	utils.RespondWithJson(w, http.StatusCreated, types.Json{
-		"existing": false,
-		"member":   member,
-	})
+	utils.RespondWithJson(w, http.StatusCreated, types.Json{"existing": false, "member": member})
 }
 
 func (sc *ServerController) UpdateServer(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
@@ -288,4 +282,43 @@ func (sc *ServerController) DeleteServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	utils.RespondWithJson(w, http.StatusOK, types.Json{"message": "Deleted the server."})
+}
+
+func (sc *ServerController) GetServerGeneralChannel(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
+	idQ := chi.URLParam(r, "serverId")
+	serverId, err := uuid.Parse(idQ)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid server id")
+		return
+	}
+
+	_, err = lib.DB.GetServerMember(r.Context(), queries.GetServerMemberParams{
+		ServerId:  serverId,
+		ProfileId: profile.ID,
+	})
+
+	if err == qrm.ErrNoRows {
+		utils.RespondWithError(w, http.StatusNotFound, "You are not a member in this server")
+		return
+	}
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error valdiating user")
+		return
+	}
+
+	channel, err := lib.DB.GetServerGeneralChannel(r.Context(), serverId)
+
+	if err == qrm.ErrNoRows {
+		utils.RespondWithError(w, http.StatusNotFound, "Channel not found")
+		return
+	}
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error when fetching channel")
+		return
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, channel)
 }

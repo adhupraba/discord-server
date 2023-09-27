@@ -24,3 +24,15 @@ type ServerWithChannelsAndMembers struct {
 	Channels []model.Channels    `json:"channels"`
 	Members  []MemberWithProfile `json:"members"`
 }
+
+type ConversationWithMemberAndProfile struct {
+	model.Conversations
+	MemberOne struct {
+		model.Members `alias:"member_one.*"`
+		Profile       model.Profiles `alias:"profile_one.*" json:"profile"`
+	} `json:"memberOne"`
+	MemberTwo struct {
+		model.Members `alias:"member_two.*"`
+		Profile       model.Profiles `alias:"profile_two.*" json:"profile"`
+	} `json:"memberTwo"`
+}

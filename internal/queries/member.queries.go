@@ -8,6 +8,7 @@ import (
 
 	"github.com/adhupraba/discord-server/internal/discord/public/model"
 	. "github.com/adhupraba/discord-server/internal/discord/public/table"
+	"github.com/adhupraba/discord-server/types"
 )
 
 func (q *Queries) CreateMember(ctx context.Context, data model.Members) (model.Members, error) {
@@ -71,4 +72,25 @@ func (q *Queries) RemoveServerMember(ctx context.Context, params RemoveServerMem
 
 	_, err := stmt.ExecContext(ctx, q.db)
 	return err
+}
+
+type GetServerMemberWithProfileParams struct {
+	ServerId  uuid.UUID
+	ProfileId uuid.UUID
+}
+
+func (q *Queries) GetServerMemberWithProfile(ctx context.Context, params GetServerMemberWithProfileParams) (types.MemberWithProfile, error) {
+	stmt := SELECT(Members.AllColumns, Profiles.AllColumns).
+		FROM(
+			Members.LEFT_JOIN(Profiles, Profiles.ID.EQ(Members.ProfileID)),
+		).
+		WHERE(
+			Members.ServerID.EQ(UUID(params.ServerId)).
+				AND(Members.ProfileID.EQ(UUID(params.ProfileId))),
+		)
+
+	var member types.MemberWithProfile
+	err := stmt.QueryContext(ctx, q.db, &member)
+
+	return member, err
 }
