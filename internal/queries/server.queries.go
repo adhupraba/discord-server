@@ -250,3 +250,28 @@ func (q *Queries) DeleteServer(ctx context.Context, params DeleteServerParams) e
 
 	return err
 }
+
+type GetServerAndMembersOfUserParam struct {
+	ServerId  uuid.UUID
+	ProfileId uuid.UUID
+}
+
+func (q *Queries) GetServerAndMembersOfUser(ctx context.Context, params GetServerAndMembersOfUserParam) (types.ServerWithMembers, error) {
+	stmt := SELECT(
+		Servers.AllColumns,
+		Members.AllColumns,
+	).
+		FROM(
+			Servers.
+				LEFT_JOIN(Members, Members.ServerID.EQ(Servers.ID)),
+		).
+		WHERE(
+			Servers.ID.EQ(UUID(params.ServerId)).
+				AND(Members.ProfileID.EQ(UUID(params.ProfileId))),
+		)
+
+	var server types.ServerWithMembers
+	err := stmt.QueryContext(ctx, q.db, &server)
+
+	return server, err
+}

@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE profiles (
   id UUID PRIMARY KEY,
-  user_id TEXT NOT NULL UNIQUE,
+  user_id TEXT NOT NULL UNIQUE, -- clerk id
   name TEXT NOT NULL,
   image_url TEXT NOT NULL,
   email TEXT NOT NULL,

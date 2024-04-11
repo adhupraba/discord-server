@@ -36,3 +36,18 @@ type ConversationWithMemberAndProfile struct {
 		Profile       model.Profiles `alias:"profile_two.*" json:"profile"`
 	} `json:"memberTwo"`
 }
+
+type ServerWithMembers struct {
+	model.Servers
+	Members []model.Members `json:"members"`
+}
+
+type SendMessageBody struct {
+	Content string `json:"content" validate:"required,min=1"`
+	FileUrl string `json:"fileUrl" validate:"url"`
+}
+
+type MessageWithMember struct {
+	model.Messages
+	Member MemberWithProfile `json:"member"`
+}

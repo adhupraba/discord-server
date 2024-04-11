@@ -16,6 +16,9 @@ func init() {
 	lib.LoadEnv()
 	lib.ConnectDb()
 	lib.InitClerkClient()
+	lib.NewChannelHub()
+
+	go lib.HubChannel.Run()
 }
 
 func main() {
@@ -32,16 +35,18 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	addr := "127.0.0.1:" + lib.EnvConfig.Port
+
 	serve := http.Server{
 		Handler: router,
-		Addr:    "127.0.0.1:" + lib.EnvConfig.Port,
+		Addr:    addr,
 		// Addr:    ":" + lib.EnvConfig.Port,
 	}
 
-	log.Printf("Server listening on port %s", lib.EnvConfig.Port)
+	log.Printf("Http server running on http://%s", addr)
+	log.Printf("Websocket server running on ws://%s", addr)
 
 	apiRouter := chi.NewRouter()
-
 	apiRouter.Mount("/health", routes.RegisterHealthRoutes())
 	apiRouter.Mount("/profile", routes.RegisterProfileRoutes())
 	apiRouter.Mount("/server", routes.RegisterServerRoutes())
@@ -49,7 +54,11 @@ func main() {
 	apiRouter.Mount("/channel", routes.RegisterChannelRoutes())
 	apiRouter.Mount("/conversation", routes.RegisterConversationRoutes())
 
+	wsRouter := chi.NewRouter()
+	wsRouter.Mount("/", routes.RegisterWsRoutes())
+
 	router.Mount("/api", lib.InjectActiveSession(apiRouter))
+	router.Mount("/ws", wsRouter)
 
 	err := serve.ListenAndServe()
 
