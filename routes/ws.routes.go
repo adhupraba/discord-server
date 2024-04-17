@@ -11,7 +11,7 @@ func RegisterWsRoutes() *chi.Mux {
 	wc := controllers.WsController{}
 	wcRoute := chi.NewRouter()
 
-	wcRoute.Get("/join-channel/{channelId}", middlewares.Auth(wc.JoinChannel))
+	wcRoute.Get("/connect", middlewares.Auth(wc.Connect))
 	wcRoute.Post("/messages", middlewares.Auth(wc.SendMessage))
 
 	return wcRoute

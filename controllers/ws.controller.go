@@ -13,6 +13,7 @@ import (
 	"github.com/adhupraba/discord-server/internal/discord/public/model"
 	"github.com/adhupraba/discord-server/internal/queries"
 	"github.com/adhupraba/discord-server/lib"
+	"github.com/adhupraba/discord-server/lib/ws"
 	"github.com/adhupraba/discord-server/types"
 	"github.com/adhupraba/discord-server/utils"
 )
@@ -82,14 +83,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func (wc *WsController) JoinChannel(w http.ResponseWriter, r *http.Request, user model.Profiles) {
-	channel, member, errCode, err := validateServer_Channel_Member(r.Context(), user.ID, r.URL.Query().Get("serverId"), r.URL.Query().Get("channelId"))
-
-	if err != nil {
-		utils.RespondWithError(w, errCode, err.Error())
-		return
-	}
-
+func (wc *WsController) Connect(w http.ResponseWriter, r *http.Request, user model.Profiles) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
@@ -97,15 +91,13 @@ func (wc *WsController) JoinChannel(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	mem := &lib.ChannelMember{
-		Conn:      conn,
-		Message:   make(chan *types.MessageWithMember),
-		ID:        member.ID.String(),
-		ChannelID: channel.ID.String(),
-		ProfileID: user.UserID,
+	mem := &ws.WsClient{
+		Conn:    conn,
+		ID:      user.ID.String(),
+		Message: make(chan *types.WsOutgoingMessage),
 	}
 
-	lib.HubChannel.Register <- mem
+	ws.WsHub.Register <- mem
 
 	go mem.WriteMessage()
 
@@ -113,7 +105,7 @@ func (wc *WsController) JoinChannel(w http.ResponseWriter, r *http.Request, user
 }
 
 func (wc *WsController) SendMessage(w http.ResponseWriter, r *http.Request, user model.Profiles) {
-	var body types.SendMessageBody
+	var body types.WsIncomingMessageBody
 	err := utils.BodyParser(r.Body, &body)
 
 	if err != nil {
@@ -141,7 +133,13 @@ func (wc *WsController) SendMessage(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	lib.HubChannel.Broadcast <- &newMessage
+	wsMessage := types.WsOutgoingMessage{
+		Event:   types.WsMessageEventBROADCAST,
+		UserID:  user.ID.String(),
+		Message: &newMessage,
+	}
 
-	utils.RespondWithJson(w, http.StatusOK, newMessage)
+	ws.WsHub.Broadcast <- &wsMessage
+
+	utils.RespondWithJson(w, http.StatusOK, wsMessage)
 }

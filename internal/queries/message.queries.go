@@ -10,7 +10,7 @@ import (
 	"github.com/adhupraba/discord-server/types"
 )
 
-func (q *Queries) CreateChannelMessage(ctx context.Context, data model.Messages) (types.MessageWithMember, error) {
+func (q *Queries) CreateChannelMessage(ctx context.Context, data model.Messages) (types.WsMessageContent, error) {
 	stmt := Messages.INSERT(
 		Messages.AllColumns.Except(Messages.CreatedAt, Messages.UpdatedAt),
 	).
@@ -21,7 +21,7 @@ func (q *Queries) CreateChannelMessage(ctx context.Context, data model.Messages)
 	err := stmt.QueryContext(ctx, q.db, &message)
 
 	if err != nil {
-		return types.MessageWithMember{}, err
+		return types.WsMessageContent{}, err
 	}
 
 	memberStmt := SELECT(Members.AllColumns, Profiles.AllColumns).
@@ -33,9 +33,20 @@ func (q *Queries) CreateChannelMessage(ctx context.Context, data model.Messages)
 	var member types.MemberWithProfile
 	err = memberStmt.QueryContext(ctx, q.db, &member)
 
-	messageWithMember := types.MessageWithMember{
-		Messages: message,
-		Member:   member,
+	wsMessage := types.WsMessage{
+		ID:        message.ID,
+		Content:   message.Content,
+		FileUrl:   message.FileUrl,
+		MemberID:  message.MemberID,
+		RoomId:    message.ChannelID,
+		Deleted:   message.Deleted,
+		CreatedAt: message.CreatedAt,
+		UpdatedAt: message.UpdatedAt,
+	}
+
+	messageWithMember := types.WsMessageContent{
+		WsMessage: wsMessage,
+		Member:    member,
 	}
 
 	return messageWithMember, err
