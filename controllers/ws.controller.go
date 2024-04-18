@@ -20,6 +20,61 @@ import (
 
 type WsController struct{}
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func (wc *WsController) Connect(w http.ResponseWriter, r *http.Request, user model.Profiles) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error establishing websocket channel connection")
+		return
+	}
+
+	mem := &ws.WsClient{
+		Conn:    conn,
+		ID:      user.ID.String(),
+		Message: make(chan *types.WsOutgoingMessage),
+	}
+
+	ws.WsHub.Register <- mem
+
+	go mem.WriteMessage()
+
+	mem.ReadMessage()
+}
+
+func (wc *WsController) SendMessage(w http.ResponseWriter, r *http.Request, user model.Profiles) {
+	var body types.WsIncomingMessageBody
+	err := utils.BodyParser(r.Body, &body)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusUnprocessableEntity, "Invalid data")
+		return
+	}
+
+	channel, member, errCode, err := validateServer_Channel_Member(r.Context(), user.ID, r.URL.Query().Get("serverId"), r.URL.Query().Get("channelId"))
+
+	if err != nil {
+		utils.RespondWithError(w, errCode, err.Error())
+		return
+	}
+
+	wsMessage, err := ws.BroadcastMessage(member.ID.String(), channel.ID.String(), types.WsRoomTypeCHANNEL, body)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, wsMessage)
+}
+
 func validateServer_Channel_Member(ctx context.Context, userId uuid.UUID, server_id string, channel_id string) (channel *model.Channels, member *model.Members, errCode int, e error) {
 	serverId, err := uuid.Parse(server_id)
 
@@ -73,73 +128,4 @@ func validateServer_Channel_Member(ctx context.Context, userId uuid.UUID, server
 	}
 
 	return &chann, member, 0, nil
-}
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
-func (wc *WsController) Connect(w http.ResponseWriter, r *http.Request, user model.Profiles) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error establishing websocket channel connection")
-		return
-	}
-
-	mem := &ws.WsClient{
-		Conn:    conn,
-		ID:      user.ID.String(),
-		Message: make(chan *types.WsOutgoingMessage),
-	}
-
-	ws.WsHub.Register <- mem
-
-	go mem.WriteMessage()
-
-	mem.ReadMessage()
-}
-
-func (wc *WsController) SendMessage(w http.ResponseWriter, r *http.Request, user model.Profiles) {
-	var body types.WsIncomingMessageBody
-	err := utils.BodyParser(r.Body, &body)
-
-	if err != nil {
-		utils.RespondWithError(w, http.StatusUnprocessableEntity, "Invalid data")
-		return
-	}
-
-	channel, member, errCode, err := validateServer_Channel_Member(r.Context(), user.ID, r.URL.Query().Get("serverId"), r.URL.Query().Get("channelId"))
-
-	if err != nil {
-		utils.RespondWithError(w, errCode, err.Error())
-		return
-	}
-
-	newMessage, err := lib.DB.CreateChannelMessage(r.Context(), model.Messages{
-		Content:   body.Content,
-		FileUrl:   &body.FileUrl,
-		MemberID:  member.ID,
-		ChannelID: channel.ID,
-		Deleted:   false,
-	})
-
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error sending message")
-		return
-	}
-
-	wsMessage := types.WsOutgoingMessage{
-		Event:   types.WsMessageEventBROADCAST,
-		UserID:  user.ID.String(),
-		Message: &newMessage,
-	}
-
-	ws.WsHub.Broadcast <- &wsMessage
-
-	utils.RespondWithJson(w, http.StatusOK, wsMessage)
 }

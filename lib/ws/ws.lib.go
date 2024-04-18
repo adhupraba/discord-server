@@ -10,10 +10,12 @@ import (
 )
 
 type WsClient struct {
-	Conn    *websocket.Conn
-	ID      string // Profile id
-	RoomID  string // will be empty when user initially establishes websocket connection. it will be updated when user opens a channel or a private conversation
-	Message chan *types.WsOutgoingMessage
+	Conn     *websocket.Conn
+	ID       string // Profile id
+	MemberID string
+	RoomID   string // will be empty when user initially establishes websocket connection. it will be updated when user opens a channel or a private conversation
+	RoomType types.WsRoomType
+	Message  chan *types.WsOutgoingMessage
 }
 
 type Hub struct {
@@ -81,18 +83,30 @@ func (c *WsClient) ReadMessage() {
 
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("websocket err: %v", err)
+				log.Printf("websocket err: %v\n", err)
 			}
 
 			break
 		}
 
-		var body types.WsIncomingMessageBody
+		var body types.WsIncomingMessage
 		err = json.Unmarshal([]byte(m), &body)
 
 		if err != nil {
-			log.Print("invalid json message body in websocket =>", err)
+			log.Println("invalid json message body in websocket =>", err)
 			break
+		}
+
+		if body.Event == types.WsMessageEventJOINROOM {
+			c.RoomID = body.RoomID
+			c.RoomType = body.RoomType
+		} else if body.Event == types.WsMessageEventNEWMESSAGE {
+			_, err := BroadcastMessage(c.MemberID, c.RoomID, c.RoomType, *body.Message)
+
+			if err != nil {
+				log.Println("error broadcasting new message =>", err)
+				break
+			}
 		}
 	}
 }

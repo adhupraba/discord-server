@@ -61,14 +61,24 @@ type WsIncomingMessageBody struct {
 type WsMessageEvent string
 
 const (
-	WsMessageEventBROADCAST   WsMessageEvent = "BROADCAST"
-	WsMessageEventSENDMESSAGE WsMessageEvent = "SENDMESSAGE"
+	WsMessageEventJOINROOM   WsMessageEvent = "JOIN_ROOM"
+	WsMessageEventBROADCAST  WsMessageEvent = "BROADCAST"
+	WsMessageEventNEWMESSAGE WsMessageEvent = "NEW_MESSAGE"
+)
+
+type WsRoomType string
+
+const (
+	WsRoomTypeCHANNEL      WsRoomType = "CHANNEL"
+	WsRoomTypeConversation WsRoomType = "CONVERSATION"
 )
 
 type WsIncomingMessage struct {
-	Event   WsMessageEvent         `json:"event" validate:"required,min=1"`
-	UserID  string                 `json:"userId" validate:"required,min=1"`
-	Message *WsIncomingMessageBody `json:"message"`
+	Event    WsMessageEvent         `json:"event" validate:"required,min=1"`
+	MemberID string                 `json:"memberId"`
+	RoomID   string                 `json:"roomId"`
+	RoomType WsRoomType             `json:"roomType"`
+	Message  *WsIncomingMessageBody `json:"message"`
 }
 
 type WsMessage struct {
@@ -89,6 +99,5 @@ type WsMessageContent struct {
 
 type WsOutgoingMessage struct {
 	Event   WsMessageEvent    `json:"event"`
-	UserID  string            `json:"userId"` // user id -> (profile table id)
 	Message *WsMessageContent `json:"message"`
 }
