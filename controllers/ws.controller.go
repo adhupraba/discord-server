@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/adhupraba/discord-server/internal/discord/public/model"
 	"github.com/adhupraba/discord-server/internal/queries"
 	"github.com/adhupraba/discord-server/lib"
-	"github.com/adhupraba/discord-server/lib/ws"
 	"github.com/adhupraba/discord-server/types"
 	"github.com/adhupraba/discord-server/utils"
 )
@@ -29,6 +29,8 @@ var upgrader = websocket.Upgrader{
 }
 
 func (wc *WsController) Connect(w http.ResponseWriter, r *http.Request, user model.Profiles) {
+	fmt.Println("connect endpoint reacher for user =>", user.Email)
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
@@ -36,13 +38,15 @@ func (wc *WsController) Connect(w http.ResponseWriter, r *http.Request, user mod
 		return
 	}
 
-	mem := &ws.WsClient{
+	fmt.Println("websocket conn established for user =>", user.Email)
+
+	mem := &lib.WsClient{
 		Conn:    conn,
 		ID:      user.ID.String(),
 		Message: make(chan *types.WsOutgoingMessage),
 	}
 
-	ws.WsHub.Register <- mem
+	lib.WsHub.Register <- mem
 
 	go mem.WriteMessage()
 
@@ -65,7 +69,7 @@ func (wc *WsController) SendMessage(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	wsMessage, err := ws.BroadcastMessage(member.ID.String(), channel.ID.String(), types.WsRoomTypeCHANNEL, body)
+	wsMessage, err := lib.BroadcastMessage(member.ID.String(), channel.ID.String(), types.WsRoomTypeCHANNEL, body)
 
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())

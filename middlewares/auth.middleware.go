@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/adhupraba/discord-server/internal/discord/public/model"
@@ -15,6 +16,7 @@ func Auth(handler NextFunc) http.HandlerFunc {
 		clerkUser, errCode, err := utils.GetUserFromClerk(r.Context())
 
 		if err != nil {
+			log.Println("get user from clerk error =>", r.URL, err)
 			utils.RespondWithError(w, errCode, err.Error())
 			return
 		}
@@ -22,6 +24,7 @@ func Auth(handler NextFunc) http.HandlerFunc {
 		profile, err := lib.DB.GetUserByClerkID(r.Context(), clerkUser.ID)
 
 		if err != nil {
+			log.Println("get user by clerk id error =>", err)
 			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
