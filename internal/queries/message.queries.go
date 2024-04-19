@@ -18,7 +18,7 @@ func transformMsgToWsMsg(message model.Messages) types.WsMessage {
 	return types.WsMessage{
 		ID:        message.ID,
 		Content:   message.Content,
-		FileUrl:   message.FileUrl,
+		FileUrl:   message.FileURL,
 		MemberID:  message.MemberID,
 		RoomId:    message.ChannelID,
 		Deleted:   message.Deleted,

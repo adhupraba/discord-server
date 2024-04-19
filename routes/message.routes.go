@@ -12,6 +12,7 @@ func RegisterMessageRoutes() *chi.Mux {
 	messageRoute := chi.NewRouter()
 
 	messageRoute.Get("/", middlewares.Auth(mc.GetMessages))
+	messageRoute.Post("/send", middlewares.Auth(mc.SendMessage))
 
 	return messageRoute
 }

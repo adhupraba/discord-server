@@ -11,5 +11,6 @@ folder="internal/discord/public/model"
 jet -source=postgres -dsn=$url -schema=public -path=internal/ -ignore-tables="goose_db_version" -ignore-enums="channel_type,member_role"
 mv internal/$dbname internal/discord
 sqlc generate
+rm -rf sample.sql.go
 mv db.go models.go $folder
 find $folder -type f ! -name 'models.go' -exec rm -f {} \;

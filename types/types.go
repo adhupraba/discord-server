@@ -54,8 +54,8 @@ type DbMessageWithMember struct {
 }
 
 type WsIncomingMessageBody struct {
-	Content string `json:"content" validate:"required,min=1"`
-	FileUrl string `json:"fileUrl" validate:"url"`
+	Content string  `json:"content" validate:"required,min=1"`
+	FileUrl *string `json:"fileUrl" validate:"omitempty,url"`
 }
 
 type WsMessageEvent string
@@ -75,11 +75,12 @@ const (
 )
 
 type WsIncomingMessage struct {
-	Event    WsMessageEvent         `json:"event" validate:"required,min=1"`
-	MemberID string                 `json:"memberId"`
-	RoomID   string                 `json:"roomId"`
-	RoomType WsRoomType             `json:"roomType"`
-	Message  *WsIncomingMessageBody `json:"message"`
+	Event     WsMessageEvent         `json:"event" validate:"required,min=1"`
+	MemberID  string                 `json:"memberId"`
+	RoomID    string                 `json:"roomId"`
+	RoomType  WsRoomType             `json:"roomType"`
+	AuthToken string                 `json:"authToken"`
+	Message   *WsIncomingMessageBody `json:"message"`
 }
 
 type WsMessage struct {

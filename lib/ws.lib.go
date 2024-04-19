@@ -3,6 +3,7 @@ package lib
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -14,7 +15,6 @@ import (
 
 type WsClient struct {
 	Conn     *websocket.Conn
-	ID       string // Profile id
 	MemberID string
 	RoomID   string // will be empty when user initially establishes websocket connection. it will be updated when user opens a channel or a private conversation
 	RoomType types.WsRoomType
@@ -22,7 +22,7 @@ type WsClient struct {
 }
 
 type Hub struct {
-	Clients    map[*WsClient]bool
+	Clients    map[*websocket.Conn]*WsClient
 	Register   chan *WsClient
 	Unregister chan *WsClient
 	Broadcast  chan *types.WsOutgoingMessage
@@ -32,7 +32,7 @@ var WsHub *Hub
 
 func NewHub() {
 	WsHub = &Hub{
-		Clients:    make(map[*WsClient]bool),
+		Clients:    make(map[*websocket.Conn]*WsClient),
 		Register:   make(chan *WsClient),
 		Unregister: make(chan *WsClient),
 		Broadcast:  make(chan *types.WsOutgoingMessage),
@@ -43,15 +43,17 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case cl := <-h.Register:
-			if _, ok := h.Clients[cl]; !ok {
-				h.Clients[cl] = true
+			if _, ok := h.Clients[cl.Conn]; !ok {
+				h.Clients[cl.Conn] = cl
 			}
 
 		case cl := <-h.Unregister:
-			delete(h.Clients, cl)
+			delete(h.Clients, cl.Conn)
 
 		case m := <-h.Broadcast:
-			for cl := range h.Clients {
+			for conn := range h.Clients {
+				cl := h.Clients[conn]
+
 				if cl.RoomID == m.Message.RoomId.String() {
 					cl.Message <- m
 				}
@@ -100,7 +102,22 @@ func (c *WsClient) ReadMessage() {
 			break
 		}
 
-		if body.Event == types.WsMessageEventJOINROOM {
+		if body.Event == types.WsMessageEventAUTHENTICATE && body.AuthToken != "" {
+			sessClaims, err := ClerkClient.VerifyToken(body.AuthToken)
+
+			if err != nil {
+				log.Println("invalid auth token =>", err)
+				break
+			}
+
+			_, err = ClerkClient.Users().Read(sessClaims.Subject)
+
+			if err != nil {
+				fmt.Println("clerk user read error =>", err)
+				break
+			}
+		} else if body.Event == types.WsMessageEventJOINROOM {
+			c.MemberID = body.MemberID
 			c.RoomID = body.RoomID
 			c.RoomType = body.RoomType
 		} else if body.Event == types.WsMessageEventNEWMESSAGE {
@@ -133,8 +150,9 @@ func BroadcastMessage(member_id string, room_id string, room_type types.WsRoomTy
 
 	if room_type == types.WsRoomTypeCHANNEL {
 		newMessage, err = DB.CreateChannelMessage(context.Background(), model.Messages{
+			ID:        uuid.New(),
 			Content:   body.Content,
-			FileUrl:   &body.FileUrl,
+			FileURL:   body.FileUrl,
 			MemberID:  memberId,
 			ChannelID: roomId,
 			Deleted:   false,
