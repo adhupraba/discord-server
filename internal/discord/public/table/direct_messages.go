@@ -23,8 +23,8 @@ type directMessagesTable struct {
 	MemberID       postgres.ColumnString
 	ConversationID postgres.ColumnString
 	Deleted        postgres.ColumnBool
-	CreatedAt      postgres.ColumnTimestamp
-	UpdatedAt      postgres.ColumnTimestamp
+	CreatedAt      postgres.ColumnTimestampz
+	UpdatedAt      postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -71,8 +71,8 @@ func newDirectMessagesTableImpl(schemaName, tableName, alias string) directMessa
 		MemberIDColumn       = postgres.StringColumn("member_id")
 		ConversationIDColumn = postgres.StringColumn("conversation_id")
 		DeletedColumn        = postgres.BoolColumn("deleted")
-		CreatedAtColumn      = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn      = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn      = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn      = postgres.TimestampzColumn("updated_at")
 		allColumns           = postgres.ColumnList{IDColumn, ContentColumn, FileURLColumn, MemberIDColumn, ConversationIDColumn, DeletedColumn, CreatedAtColumn, UpdatedAtColumn}
 		mutableColumns       = postgres.ColumnList{ContentColumn, FileURLColumn, MemberIDColumn, ConversationIDColumn, DeletedColumn, CreatedAtColumn, UpdatedAtColumn}
 	)

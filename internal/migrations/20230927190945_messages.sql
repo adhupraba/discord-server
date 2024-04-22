@@ -7,8 +7,8 @@ CREATE TABLE messages (
   member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
   channel_id UUID NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
   deleted BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE INDEX messages_member_id_idx ON messages("member_id");
@@ -18,7 +18,7 @@ CREATE INDEX messages_channel_id_idx ON messages("channel_id");
 CREATE FUNCTION update_updated_at_messages()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = now();
+  NEW.updated_at = NOW();
   RETURN NEW;
 END;
 $$ language 'plpgsql';

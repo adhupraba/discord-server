@@ -171,7 +171,9 @@ func BroadcastMessage(member_id string, room_id string, room_type types.WsRoomTy
 		Message: &newMessage,
 	}
 
-	WsHub.Broadcast <- msg
+	go func() {
+		WsHub.Broadcast <- msg
+	}()
 
 	return msg, nil
 }

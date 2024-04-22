@@ -3,6 +3,7 @@ package queries
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	. "github.com/go-jet/jet/v2/postgres"
@@ -41,14 +42,11 @@ func (q *Queries) CreateChannelMessage(ctx context.Context, data model.Messages)
 		return types.WsMessageContent{}, err
 	}
 
-	memberStmt := SELECT(Members.AllColumns, Profiles.AllColumns).
-		FROM(
-			Members.LEFT_JOIN(Profiles, Profiles.ID.EQ(Members.ProfileID)),
-		).
-		WHERE(Members.ID.EQ(UUID(data.MemberID)))
+	member, err := q.GetMemberWithProfileByMemberID(ctx, message.MemberID)
 
-	var member types.MemberWithProfile
-	err = memberStmt.QueryContext(ctx, q.db, &member)
+	if err != nil {
+		return types.WsMessageContent{}, err
+	}
 
 	messageWithMember := types.WsMessageContent{
 		WsMessage: transformMsgToWsMsg(message),
@@ -73,8 +71,8 @@ func (q *Queries) GetMessages(ctx context.Context, params GetMessagesParams) (me
 		offset = 1
 
 		exp = exp.AND(
-			Messages.CreatedAt.LT_EQ(TimestampT(*params.LastMessageDate)).OR(
-				Messages.CreatedAt.EQ(TimestampT(*params.LastMessageDate)).AND(Messages.ID.EQ(UUID(*params.LastMessageId))),
+			Messages.CreatedAt.LT_EQ(TimestampzT(*params.LastMessageDate)).OR(
+				Messages.CreatedAt.EQ(TimestampzT(*params.LastMessageDate)).AND(Messages.ID.EQ(UUID(*params.LastMessageId))),
 			),
 		)
 	}
@@ -115,4 +113,93 @@ func (q *Queries) GetMessages(ctx context.Context, params GetMessagesParams) (me
 	}
 
 	return wsMessages, nextCursor, nil
+}
+
+type GetMessageByIDParams struct {
+	ID        uuid.UUID
+	ChannelID *uuid.UUID
+}
+
+func (q *Queries) GetMessageByID(ctx context.Context, params GetMessageByIDParams) (message *model.Messages, err error) {
+	var exp BoolExpression = Messages.ID.EQ(UUID(params.ID))
+
+	if params.ChannelID != nil {
+		exp = exp.AND(Messages.ChannelID.EQ(UUID(params.ChannelID)))
+	}
+
+	stmt := Messages.SELECT(Messages.AllColumns).WHERE(exp)
+
+	var msg model.Messages
+
+	err = stmt.QueryContext(ctx, q.db, &msg)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &msg, nil
+}
+
+func (q *Queries) UpdateMessageByID(ctx context.Context, id uuid.UUID, content string) (message *types.WsOutgoingMessage, err error) {
+	stmt := Messages.UPDATE(Messages.Content).
+		MODEL(model.Messages{Content: content}).
+		WHERE(Messages.ID.EQ(UUID(id))).
+		RETURNING(Messages.AllColumns)
+
+	var updMessage model.Messages
+	err = stmt.QueryContext(ctx, q.db, &updMessage)
+
+	if err != nil {
+		log.Println("update message content error =>", err)
+		return nil, err
+	}
+
+	member, err := q.GetMemberWithProfileByMemberID(ctx, updMessage.MemberID)
+
+	if err != nil {
+		log.Println("get member with profile error =>", err)
+		return nil, err
+	}
+
+	message = &types.WsOutgoingMessage{
+		Event: types.WsMessageEventMESSAGEMODIFIED,
+		Message: &types.WsMessageContent{
+			WsMessage: transformMsgToWsMsg(updMessage),
+			Member:    member,
+		},
+	}
+
+	log.Println("message constructed")
+
+	return message, err
+}
+
+func (q *Queries) DeleteMessageByID(ctx context.Context, id uuid.UUID) (message *types.WsOutgoingMessage, err error) {
+	stmt := Messages.UPDATE(Messages.FileURL, Messages.Content, Messages.Deleted).
+		MODEL(model.Messages{FileURL: nil, Content: "This message has been deleted.", Deleted: true}).
+		WHERE(Messages.ID.EQ(UUID(id))).
+		RETURNING(Messages.AllColumns)
+
+	var updMessage model.Messages
+	err = stmt.QueryContext(ctx, q.db, &updMessage)
+
+	if err != nil {
+		return nil, err
+	}
+
+	member, err := q.GetMemberWithProfileByMemberID(ctx, updMessage.MemberID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	message = &types.WsOutgoingMessage{
+		Event: types.WsMessageEventMESSAGEMODIFIED,
+		Message: &types.WsMessageContent{
+			WsMessage: transformMsgToWsMsg(updMessage),
+			Member:    member,
+		},
+	}
+
+	return message, err
 }

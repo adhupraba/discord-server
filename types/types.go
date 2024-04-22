@@ -61,10 +61,11 @@ type WsIncomingMessageBody struct {
 type WsMessageEvent string
 
 const (
-	WsMessageEventAUTHENTICATE WsMessageEvent = "AUTHENTICATE"
-	WsMessageEventJOINROOM     WsMessageEvent = "JOIN_ROOM"
-	WsMessageEventBROADCAST    WsMessageEvent = "BROADCAST"
-	WsMessageEventNEWMESSAGE   WsMessageEvent = "NEW_MESSAGE"
+	WsMessageEventAUTHENTICATE    WsMessageEvent = "AUTHENTICATE"
+	WsMessageEventJOINROOM        WsMessageEvent = "JOIN_ROOM"
+	WsMessageEventBROADCAST       WsMessageEvent = "BROADCAST"
+	WsMessageEventNEWMESSAGE      WsMessageEvent = "NEW_MESSAGE"
+	WsMessageEventMESSAGEMODIFIED WsMessageEvent = "MESSAGE_MODIFIED"
 )
 
 type WsRoomType string

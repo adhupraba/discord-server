@@ -6,8 +6,8 @@ CREATE TABLE servers (
   image_url TEXT NOT NULL,
   invite_code UUID NOT NULL UNIQUE,
   profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE INDEX servers_profile_id_idx ON servers("profile_id");
@@ -15,7 +15,7 @@ CREATE INDEX servers_profile_id_idx ON servers("profile_id");
 CREATE FUNCTION update_updated_at_servers()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = now();
+  NEW.updated_at = NOW();
   RETURN NEW;
 END;
 $$ language 'plpgsql';

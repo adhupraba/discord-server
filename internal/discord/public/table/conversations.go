@@ -20,8 +20,8 @@ type conversationsTable struct {
 	ID          postgres.ColumnString
 	MemberOneID postgres.ColumnString
 	MemberTwoID postgres.ColumnString
-	CreatedAt   postgres.ColumnTimestamp
-	UpdatedAt   postgres.ColumnTimestamp
+	CreatedAt   postgres.ColumnTimestampz
+	UpdatedAt   postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -65,8 +65,8 @@ func newConversationsTableImpl(schemaName, tableName, alias string) conversation
 		IDColumn          = postgres.StringColumn("id")
 		MemberOneIDColumn = postgres.StringColumn("member_one_id")
 		MemberTwoIDColumn = postgres.StringColumn("member_two_id")
-		CreatedAtColumn   = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn   = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn   = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn   = postgres.TimestampzColumn("updated_at")
 		allColumns        = postgres.ColumnList{IDColumn, MemberOneIDColumn, MemberTwoIDColumn, CreatedAtColumn, UpdatedAtColumn}
 		mutableColumns    = postgres.ColumnList{MemberOneIDColumn, MemberTwoIDColumn, CreatedAtColumn, UpdatedAtColumn}
 	)

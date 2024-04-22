@@ -22,8 +22,8 @@ type profilesTable struct {
 	Name      postgres.ColumnString
 	ImageURL  postgres.ColumnString
 	Email     postgres.ColumnString
-	CreatedAt postgres.ColumnTimestamp
-	UpdatedAt postgres.ColumnTimestamp
+	CreatedAt postgres.ColumnTimestampz
+	UpdatedAt postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -69,8 +69,8 @@ func newProfilesTableImpl(schemaName, tableName, alias string) profilesTable {
 		NameColumn      = postgres.StringColumn("name")
 		ImageURLColumn  = postgres.StringColumn("image_url")
 		EmailColumn     = postgres.StringColumn("email")
-		CreatedAtColumn = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
 		allColumns      = postgres.ColumnList{IDColumn, UserIDColumn, NameColumn, ImageURLColumn, EmailColumn, CreatedAtColumn, UpdatedAtColumn}
 		mutableColumns  = postgres.ColumnList{UserIDColumn, NameColumn, ImageURLColumn, EmailColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
