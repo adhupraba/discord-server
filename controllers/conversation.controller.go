@@ -89,7 +89,5 @@ func (cc *ConversationController) CreateNewConversation(w http.ResponseWriter, r
 		return
 	}
 
-	fmt.Printf("created conversation data => %#v\n\n", conversation)
-
 	utils.RespondWithJson(w, http.StatusCreated, conversation)
 }

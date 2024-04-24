@@ -116,6 +116,13 @@ func (c *WsClient) ReadMessage() {
 				fmt.Println("clerk user read error =>", err)
 				break
 			}
+
+			go func() {
+				c.Message <- &types.WsOutgoingMessage{
+					Event:   types.WsMessageEventACKNOWLEDGED,
+					Message: nil,
+				}
+			}()
 		} else if body.Event == types.WsMessageEventJOINROOM {
 			c.MemberID = body.MemberID
 			c.RoomID = body.RoomID

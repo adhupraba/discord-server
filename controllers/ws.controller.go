@@ -161,18 +161,6 @@ func (wc *WsController) DeleteMessage(w http.ResponseWriter, r *http.Request, us
 
 	messageId = &msgId
 
-	type updateMessageBody struct {
-		Content string `json:"content" validate:"required,min=1"`
-	}
-
-	var body updateMessageBody
-	err = utils.BodyParser(r.Body, &body)
-
-	if err != nil {
-		utils.RespondWithError(w, http.StatusUnprocessableEntity, "Invalid data")
-		return
-	}
-
 	_, member, message, errCode, err := validateServer_Channel_Member(validateParams{
 		Ctx:       r.Context(),
 		UserID:    user.ID,

@@ -62,6 +62,7 @@ type WsMessageEvent string
 
 const (
 	WsMessageEventAUTHENTICATE    WsMessageEvent = "AUTHENTICATE"
+	WsMessageEventACKNOWLEDGED    WsMessageEvent = "ACKNOWLEDGED"
 	WsMessageEventJOINROOM        WsMessageEvent = "JOIN_ROOM"
 	WsMessageEventBROADCAST       WsMessageEvent = "BROADCAST"
 	WsMessageEventNEWMESSAGE      WsMessageEvent = "NEW_MESSAGE"
