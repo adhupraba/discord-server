@@ -21,8 +21,8 @@ type membersTable struct {
 	Role      postgres.ColumnString
 	ProfileID postgres.ColumnString
 	ServerID  postgres.ColumnString
-	CreatedAt postgres.ColumnTimestamp
-	UpdatedAt postgres.ColumnTimestamp
+	CreatedAt postgres.ColumnTimestampz
+	UpdatedAt postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -67,8 +67,8 @@ func newMembersTableImpl(schemaName, tableName, alias string) membersTable {
 		RoleColumn      = postgres.StringColumn("role")
 		ProfileIDColumn = postgres.StringColumn("profile_id")
 		ServerIDColumn  = postgres.StringColumn("server_id")
-		CreatedAtColumn = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
 		allColumns      = postgres.ColumnList{IDColumn, RoleColumn, ProfileIDColumn, ServerIDColumn, CreatedAtColumn, UpdatedAtColumn}
 		mutableColumns  = postgres.ColumnList{RoleColumn, ProfileIDColumn, ServerIDColumn, CreatedAtColumn, UpdatedAtColumn}
 	)

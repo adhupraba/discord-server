@@ -22,8 +22,8 @@ type serversTable struct {
 	ImageURL   postgres.ColumnString
 	InviteCode postgres.ColumnString
 	ProfileID  postgres.ColumnString
-	CreatedAt  postgres.ColumnTimestamp
-	UpdatedAt  postgres.ColumnTimestamp
+	CreatedAt  postgres.ColumnTimestampz
+	UpdatedAt  postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -69,8 +69,8 @@ func newServersTableImpl(schemaName, tableName, alias string) serversTable {
 		ImageURLColumn   = postgres.StringColumn("image_url")
 		InviteCodeColumn = postgres.StringColumn("invite_code")
 		ProfileIDColumn  = postgres.StringColumn("profile_id")
-		CreatedAtColumn  = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn  = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn  = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn  = postgres.TimestampzColumn("updated_at")
 		allColumns       = postgres.ColumnList{IDColumn, NameColumn, ImageURLColumn, InviteCodeColumn, ProfileIDColumn, CreatedAtColumn, UpdatedAtColumn}
 		mutableColumns   = postgres.ColumnList{NameColumn, ImageURLColumn, InviteCodeColumn, ProfileIDColumn, CreatedAtColumn, UpdatedAtColumn}
 	)

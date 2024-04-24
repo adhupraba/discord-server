@@ -22,8 +22,8 @@ type channelsTable struct {
 	Type      postgres.ColumnString
 	ProfileID postgres.ColumnString
 	ServerID  postgres.ColumnString
-	CreatedAt postgres.ColumnTimestamp
-	UpdatedAt postgres.ColumnTimestamp
+	CreatedAt postgres.ColumnTimestampz
+	UpdatedAt postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -69,8 +69,8 @@ func newChannelsTableImpl(schemaName, tableName, alias string) channelsTable {
 		TypeColumn      = postgres.StringColumn("type")
 		ProfileIDColumn = postgres.StringColumn("profile_id")
 		ServerIDColumn  = postgres.StringColumn("server_id")
-		CreatedAtColumn = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
 		allColumns      = postgres.ColumnList{IDColumn, NameColumn, TypeColumn, ProfileIDColumn, ServerIDColumn, CreatedAtColumn, UpdatedAtColumn}
 		mutableColumns  = postgres.ColumnList{NameColumn, TypeColumn, ProfileIDColumn, ServerIDColumn, CreatedAtColumn, UpdatedAtColumn}
 	)

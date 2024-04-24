@@ -6,14 +6,14 @@ CREATE TABLE profiles (
   name TEXT NOT NULL,
   image_url TEXT NOT NULL,
   email TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE FUNCTION update_updated_at_profiles()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = now();
+  NEW.updated_at = NOW();
   RETURN NEW;
 END;
 $$ language 'plpgsql';

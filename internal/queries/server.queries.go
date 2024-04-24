@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 
 	. "github.com/go-jet/jet/v2/postgres"
 	"github.com/go-jet/jet/v2/qrm"
@@ -74,6 +75,7 @@ func (q *Queries) CreateServerWithTx(ctx context.Context, params CreateServerWit
 	err = stmt.QueryContext(ctx, qtx.db, &server)
 
 	if err != nil {
+		log.Println("new server insert error =>", err)
 		return nil, errors.New("Error creating your server")
 	}
 
@@ -82,10 +84,12 @@ func (q *Queries) CreateServerWithTx(ctx context.Context, params CreateServerWit
 		Name:      "general",
 		ProfileID: server.ProfileID,
 		ServerID:  server.ID,
+		Type:      model.ChannelTypeTEXT,
 	}
 	channel, err := qtx.CreateChannel(ctx, channelData)
 
 	if err != nil {
+		log.Println("general channel insert error =>", err)
 		return nil, errors.New("Error creating default channel")
 	}
 

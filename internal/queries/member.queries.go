@@ -94,3 +94,16 @@ func (q *Queries) GetServerMemberWithProfile(ctx context.Context, params GetServ
 
 	return member, err
 }
+
+func (q *Queries) GetMemberWithProfileByMemberID(ctx context.Context, memberId uuid.UUID) (types.MemberWithProfile, error) {
+	stmt := SELECT(Members.AllColumns, Profiles.AllColumns).
+		FROM(
+			Members.LEFT_JOIN(Profiles, Profiles.ID.EQ(Members.ProfileID)),
+		).
+		WHERE(Members.ID.EQ(UUID(memberId)))
+
+	var member types.MemberWithProfile
+	err := stmt.QueryContext(ctx, q.db, &member)
+
+	return member, err
+}

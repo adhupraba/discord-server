@@ -12,6 +12,7 @@ sql:
         json_tags_case_style: "camel"
         rename:
           image_url: "ImageURL"
+          file_url: "FileURL"
         overrides:
           - column: "public.*.id"
             go_struct_tag: 'sql:"primary_key"'

@@ -6,8 +6,8 @@ CREATE TABLE channels (
   type channel_type NOT NULL DEFAULT E'TEXT',
   profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   server_id UUID NOT NULL REFERENCES servers(id) ON DELETE CASCADE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE INDEX channels_profile_id_idx ON channels("profile_id");
@@ -17,7 +17,7 @@ CREATE INDEX channels_server_id_idx ON channels("server_id");
 CREATE FUNCTION update_updated_at_channels()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = now();
+  NEW.updated_at = NOW();
   RETURN NEW;
 END;
 $$ language 'plpgsql';

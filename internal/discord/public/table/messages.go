@@ -23,8 +23,8 @@ type messagesTable struct {
 	MemberID  postgres.ColumnString
 	ChannelID postgres.ColumnString
 	Deleted   postgres.ColumnBool
-	CreatedAt postgres.ColumnTimestamp
-	UpdatedAt postgres.ColumnTimestamp
+	CreatedAt postgres.ColumnTimestampz
+	UpdatedAt postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -71,8 +71,8 @@ func newMessagesTableImpl(schemaName, tableName, alias string) messagesTable {
 		MemberIDColumn  = postgres.StringColumn("member_id")
 		ChannelIDColumn = postgres.StringColumn("channel_id")
 		DeletedColumn   = postgres.BoolColumn("deleted")
-		CreatedAtColumn = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
 		allColumns      = postgres.ColumnList{IDColumn, ContentColumn, FileURLColumn, MemberIDColumn, ChannelIDColumn, DeletedColumn, CreatedAtColumn, UpdatedAtColumn}
 		mutableColumns  = postgres.ColumnList{ContentColumn, FileURLColumn, MemberIDColumn, ChannelIDColumn, DeletedColumn, CreatedAtColumn, UpdatedAtColumn}
 	)

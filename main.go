@@ -16,9 +16,9 @@ func init() {
 	lib.LoadEnv()
 	lib.ConnectDb()
 	lib.InitClerkClient()
-	lib.NewChannelHub()
+	lib.NewHub()
 
-	go lib.HubChannel.Run()
+	go lib.WsHub.Run()
 }
 
 func main() {
@@ -53,6 +53,7 @@ func main() {
 	apiRouter.Mount("/member", routes.RegisterMemberRoutes())
 	apiRouter.Mount("/channel", routes.RegisterChannelRoutes())
 	apiRouter.Mount("/conversation", routes.RegisterConversationRoutes())
+	apiRouter.Mount("/message", routes.RegisterMessageRoutes())
 
 	wsRouter := chi.NewRouter()
 	wsRouter.Mount("/", routes.RegisterWsRoutes())
