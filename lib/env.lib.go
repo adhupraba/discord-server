@@ -44,7 +44,7 @@ func LoadEnv() {
 	}
 
 	EnvConfig = envConfig{
-		Port:               os.Getenv("ENV_PORT"),
+		Port:               port,
 		DbUrl:              os.Getenv("DB_URL"),
 		Env:                env,
 		CorsAllowedOrigins: []string{},
