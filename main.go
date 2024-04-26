@@ -35,7 +35,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	addr := "127.0.0.1:" + lib.EnvConfig.Port
+	addr := "0.0.0.0:" + lib.EnvConfig.Port
 
 	serve := http.Server{
 		Handler: router,

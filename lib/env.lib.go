@@ -20,7 +20,8 @@ var EnvConfig envConfig
 
 func LoadEnv() {
 	var env string = os.Getenv("ENV")
-	log.Println("env =>", env)
+	var port string = os.Getenv("PORT")
+	log.Println("env, port =>", env, port)
 
 	if env != "production" {
 		err := godotenv.Load()
@@ -34,8 +35,16 @@ func LoadEnv() {
 		env = "development"
 	}
 
+	if port == "" {
+		port = os.Getenv("ENV_PORT")
+	}
+
+	if port == "" {
+		port = "8000"
+	}
+
 	EnvConfig = envConfig{
-		Port:               os.Getenv("PORT"),
+		Port:               os.Getenv("ENV_PORT"),
 		DbUrl:              os.Getenv("DB_URL"),
 		Env:                env,
 		CorsAllowedOrigins: []string{},
