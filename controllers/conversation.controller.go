@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-jet/jet/v2/qrm"
@@ -75,6 +76,7 @@ func (cc *ConversationController) CreateNewConversation(w http.ResponseWriter, r
 	})
 
 	if err != nil {
+		log.Println("error creating conversation =>", err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error creating conversation")
 		return
 	}

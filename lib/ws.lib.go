@@ -165,7 +165,14 @@ func BroadcastMessage(member_id string, room_id string, room_type types.WsRoomTy
 			Deleted:   false,
 		})
 	} else {
-		// ! save message to conversation table
+		newMessage, err = DB.CreateDirectMessage(context.Background(), model.DirectMessages{
+			ID:             uuid.New(),
+			Content:        body.Content,
+			FileURL:        body.FileUrl,
+			MemberID:       memberId,
+			ConversationID: roomId,
+			Deleted:        false,
+		})
 	}
 
 	if err != nil {

@@ -31,16 +31,20 @@ type ServerWithChannelsAndMembers struct {
 	Members  []MemberWithProfile `json:"members"`
 }
 
+type MemberOne struct {
+	model.Members `alias:"member_one.*"`
+	Profile       model.Profiles `alias:"profile_one.*" json:"profile"`
+}
+
+type MemberTwo struct {
+	model.Members `alias:"member_two.*"`
+	Profile       model.Profiles `alias:"profile_two.*" json:"profile"`
+}
+
 type ConversationWithMemberAndProfile struct {
 	model.Conversations
-	MemberOne struct {
-		model.Members `alias:"member_one.*"`
-		Profile       model.Profiles `alias:"profile_one.*" json:"profile"`
-	} `json:"memberOne"`
-	MemberTwo struct {
-		model.Members `alias:"member_two.*"`
-		Profile       model.Profiles `alias:"profile_two.*" json:"profile"`
-	} `json:"memberTwo"`
+	MemberOne `json:"memberOne"`
+	MemberTwo `json:"memberTwo"`
 }
 
 type ServerWithMembers struct {
@@ -50,6 +54,11 @@ type ServerWithMembers struct {
 
 type DbMessageWithMember struct {
 	model.Messages
+	Member MemberWithProfile `json:"member"`
+}
+
+type DbDirectMessageWithMember struct {
+	model.DirectMessages
 	Member MemberWithProfile `json:"member"`
 }
 
@@ -73,7 +82,7 @@ type WsRoomType string
 
 const (
 	WsRoomTypeCHANNEL      WsRoomType = "CHANNEL"
-	WsRoomTypeConversation WsRoomType = "CONVERSATION"
+	WsRoomTypeCONVERSATION WsRoomType = "CONVERSATION"
 )
 
 type WsIncomingMessage struct {

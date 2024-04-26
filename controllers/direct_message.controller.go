@@ -13,15 +13,16 @@ import (
 	"github.com/adhupraba/discord-server/utils"
 )
 
-type MessageController struct{}
+type DirectMessageController struct{}
 
-type GetMessagesRes struct {
+type GetDirectMessagesRes struct {
 	NextCursor *string                  `json:"nextCursor"`
 	Messages   []types.WsMessageContent `json:"messages"`
 }
 
-func (mc *MessageController) GetMessages(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
+func (mc *DirectMessageController) GetMessages(w http.ResponseWriter, r *http.Request, profile model.Profiles) {
 	cursor := r.URL.Query().Get("cursor")
+
 	lastMsgId, lastMsgDate, err := helpers.ValidateCursor(cursor)
 
 	if err != nil {
@@ -29,22 +30,22 @@ func (mc *MessageController) GetMessages(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	channelIdQuery := r.URL.Query().Get("channelId")
+	conversationId := r.URL.Query().Get("conversationId")
 
-	if channelIdQuery == "" {
+	if conversationId == "" {
 		utils.RespondWithError(w, http.StatusBadRequest, "Channel ID missing")
 		return
 	}
 
-	channelId, err := uuid.Parse(channelIdQuery)
+	conversationUUID, err := uuid.Parse(conversationId)
 
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid channel id")
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid conversation id")
 		return
 	}
 
-	messages, nextCursor, err := lib.DB.GetMessages(r.Context(), queries.GetMessagesParams{
-		ChannelId:       channelId,
+	messages, nextCursor, err := lib.DB.GetDirectMessages(r.Context(), queries.GetDirectMessagesParams{
+		ConversationID:  conversationUUID,
 		LastMessageId:   lastMsgId,
 		LastMessageDate: lastMsgDate,
 	})

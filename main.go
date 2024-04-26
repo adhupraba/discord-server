@@ -54,6 +54,7 @@ func main() {
 	apiRouter.Mount("/channel", routes.RegisterChannelRoutes())
 	apiRouter.Mount("/conversation", routes.RegisterConversationRoutes())
 	apiRouter.Mount("/message", routes.RegisterMessageRoutes())
+	apiRouter.Mount("/direct-message", routes.RegisterDirectMessageRoutes())
 
 	wsRouter := chi.NewRouter()
 	wsRouter.Mount("/", routes.RegisterWsRoutes())

@@ -59,3 +59,47 @@ func (q *Queries) GetConversationByMembers(ctx context.Context, params GetConver
 
 	return conversation, err
 }
+
+type GetConversationWithMembersByIDParams struct {
+	ConversationID uuid.UUID
+	ProfileID      *uuid.UUID
+}
+
+func (q *Queries) GetConversationWithMembersByID(ctx context.Context, params GetConversationWithMembersByIDParams) (types.ConversationWithMemberAndProfile, error) {
+	memberOne := Members.AS("member_one")
+	profileOne := Profiles.AS("profile_one")
+	memberTwo := Members.AS("member_two")
+	profileTwo := Profiles.AS("profile_two")
+
+	exp := Conversations.ID.EQ(UUID(params.ConversationID))
+
+	if params.ProfileID != nil {
+		exp.AND(
+			OR(
+				memberOne.ProfileID.EQ(UUID(params.ProfileID)),
+				memberTwo.ProfileID.EQ(UUID(params.ProfileID)),
+			),
+		)
+	}
+
+	stmt := SELECT(
+		Conversations.AllColumns,
+		memberOne.AllColumns,
+		profileOne.AllColumns,
+		memberTwo.AllColumns,
+		profileTwo.AllColumns,
+	).
+		FROM(
+			Conversations.
+				LEFT_JOIN(memberOne, memberOne.ID.EQ(Conversations.MemberOneID)).
+				LEFT_JOIN(profileOne, profileOne.ID.EQ(memberOne.ProfileID)).
+				LEFT_JOIN(memberTwo, memberTwo.ID.EQ(Conversations.MemberTwoID)).
+				LEFT_JOIN(profileTwo, profileTwo.ID.EQ(memberTwo.ProfileID)),
+		).
+		WHERE(exp)
+
+	var conversation types.ConversationWithMemberAndProfile
+	err := stmt.QueryContext(ctx, q.db, &conversation)
+
+	return conversation, err
+}

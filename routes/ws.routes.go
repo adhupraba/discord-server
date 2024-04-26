@@ -13,12 +13,18 @@ func RegisterWsRoutes() *chi.Mux {
 	wcRoute := chi.NewRouter()
 	wcRoute.Get("/connect", wc.Connect)
 
-	wcApis := chi.NewRouter()
-	wcApis.Post("/send", middlewares.Auth(wc.SendMessage))
-	wcApis.Patch("/{messageId}", middlewares.Auth(wc.EditMessage))
-	wcApis.Delete("/{messageId}", middlewares.Auth(wc.DeleteMessage))
+	chanMsgApis := chi.NewRouter()
+	chanMsgApis.Post("/send", middlewares.Auth(wc.SendChanMessage))
+	chanMsgApis.Patch("/{messageId}", middlewares.Auth(wc.EditChanMessage))
+	chanMsgApis.Delete("/{messageId}", middlewares.Auth(wc.DeleteChanMessage))
 
-	wcRoute.Mount("/message", lib.InjectActiveSession(wcApis))
+	directMsgApis := chi.NewRouter()
+	directMsgApis.Post("/send", middlewares.Auth(wc.SendDirectMessage))
+	directMsgApis.Patch("/{messageId}", middlewares.Auth(wc.EditDirectMessage))
+	directMsgApis.Delete("/{messageId}", middlewares.Auth(wc.DeleteDirectMessage))
+
+	wcRoute.Mount("/message", lib.InjectActiveSession(chanMsgApis))
+	wcRoute.Mount("/direct-message", lib.InjectActiveSession(directMsgApis))
 
 	return wcRoute
 }
