@@ -19,13 +19,16 @@ type envConfig struct {
 var EnvConfig envConfig
 
 func LoadEnv() {
-	err := godotenv.Load()
-
-	if err != nil {
-		log.Fatal("Unable to load .env:", err)
-	}
-
 	var env string = os.Getenv("ENV")
+	log.Println("env =>", env)
+
+	if env != "production" {
+		err := godotenv.Load()
+
+		if err != nil {
+			log.Fatal("Unable to load .env:", err)
+		}
+	}
 
 	if env == "" {
 		env = "development"
