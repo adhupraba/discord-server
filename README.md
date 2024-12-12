@@ -1,4 +1,4 @@
-The UI for this project is live at: https://go-discord.vercel.app
+The UI for this project is live at: https://discord.adhupraba.com
 
 The source code for the UI is at: https://github.com/adhupraba/discord-client
 
